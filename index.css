@@ -1,0 +1,6 @@
+body{
+    margin: 0;
+    padding: 0;
+    /*These 2 css code helps the canvas to fit the full size of the canvas, by default, the browser has some custom paddings
+    that spaces it from the edges of the browser. The code helps remove the padding to make it fit the whole screen */
+}
