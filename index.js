@@ -1,3 +1,7 @@
+//Note: The functions are written in chronological order of when things will happen as we play the game. So from calling a new game
+//to printing the graphics, to throwing bombs and having them animated.
+
+
 //The state of the game 
 //This is an object that describes many aspect of the game. From the size of the buildings to the position of the bomb
 let state = {};
@@ -207,12 +211,146 @@ function drawBuildings() {
                 }
             }
         }
-
-
-
     });
 }
 
+//Drawing the gorillas.
+function drawGorilla(player) {
+    ctx.save();
 
-//Note: The functions are written in chronological order of when things will happen as we play the game. So from calling a new game
-//to printing the graphics, to throwing bombs and having them animated.
+    const building = 
+    player === 1
+    ? state.buildings.at(1) //Second building
+    : state.buildings.at(-2) //Second last building
+
+    ctx.translate(building.x + building.width / 2, buidling.height);
+
+    drawGorillaBody();
+    drawGorillaLeftArm(player);
+    drawGorillaRightArm(player);
+    drawGorillaFace(player);
+
+    ctx.restore();
+}
+
+function drawGorillaBody() {
+    ctx.fillStyle = "black";
+
+    ctx.beginPath();
+    ctx.moveTo(0, 15); //left leg outline
+    ctx.lineTo(-7, 0); //left leg outline
+    ctx.lineTo(-20, 0); //left foot outline
+    ctx.lineTo(-17, 18); //body
+    ctx.lineTo(-20, 44); //body
+
+    ctx.lineTo(-11, 77); //body
+    ctx.lineTo(0, 84); //body
+    ctx.lineTo(11, 77); //body
+
+    ctx.lineTo(20, 44); //body
+    ctx.lineTo(17, 18); //body
+    ctx.lineTo(20, 0); //body
+    ctx.lineTo(7, 0); //body
+    ctx.fill(); //fill the shape
+}
+
+function drawGorilla(player) {
+    ctx.save();
+
+    const building = 
+    player === 1
+    ? state.buildings.at(1) //Second building
+    : state.buildings.at(-2); //Second last building
+
+    ctx.translate(building.x + building.width / 2, building.height);
+
+    drawGorillaBody();
+    drawGorillaLeftArm(player);
+    drawGorillaRightArm(player);
+    drawGorillaFace(player);
+
+    ctx.restore();
+}
+
+function drawGorillaLeftArm(player) {
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 18;
+
+    ctx.beginPath();
+    ctx.moveTo(-14, 50);
+
+    if (state.phase === "aiming" && state.currentPlayer === 1 && player === 1) {
+        ctx.quadraticCurveTo(-44, 63, -28, 107); //Aiming (while holding the bomb)
+    } else if (state.phase === "celebrating" && state.currentPlayer === player) {
+        ctx.quadraticCurveTo(-44, 63, -28, 107); //Celebrating
+    } else{
+        ctx.quadraticCurveTo(-44, 45, -28, 12); //Neutral 
+    }
+
+    ctx.stroke();
+}
+
+function drawGorillaRightArm(player) {
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 18;
+
+    ctx.beginPath();
+    ctx.moveTo(+14, 50);
+
+    if (state.phase === "aiming" && state.currentPlayer === 2 && player === 2){
+        ctx.quadraticCurveTo(+44, 63, +28, 107); //Aiming (while holding the bomb)
+    } else if (state.phase ==="celebrating" && state.currentPlayer === player) {
+        ctx.quadraticCurveTo(+44, 63, +28, 107); //Celebrating
+    } else{
+        ctx.quadraticCurveTo(+44, 45, +28, 12); //Neutral
+    }
+
+    ctx.stroke();
+
+}
+
+function drawGorillaFace(player) {
+    //Face
+    ctx.fillStyle = "lightgray";
+    ctx.beginPath();
+    ctx.arc(0, 63, 9, 0, 2 * Math.PI);
+    ctx.moveTo(-3.5, 70);
+    ctx.arc(-3.5, 70, 4, 0, 2 * Math.PI);
+    ctx.moveTo(+3.5, 70);
+    ctx.arc(+3.5, 70, 4, 0, 2 * Math.PI);
+    ctx.fill();
+
+    //Eyes
+     ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.arc(-3.5, 70, 1.4, 0, 2 * Math.PI);
+    ctx.moveTo(+3.5, 70);
+    ctx.arc(+3.5, 70, 1.4, 0, 2 * Math.PI);
+    ctx.fill();
+
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1.4;
+
+    //Nose
+    ctx.beginPath();
+    ctx.moveTo(-3.5, 66.5);
+    ctx.lineTo(-1.5, 65);
+    ctx.moveTo(3.5, 66.5);
+    ctx.lineTo(1.5, 65);
+    ctx.stroke();
+
+    //Mouth
+    ctx.beginPath();
+    if (state.phase === "celebrating" && state.currentPlayer === player) {
+        ctx.moveTo(-5, 60);
+        ctx.quadraticCurveTo(0, 56, 5, 60);
+    } else {
+        ctx.moveTo(-5, 56);
+        ctx.quadraticCurveTo(0, 60, 5, 56);
+    }
+    ctx.stroke();
+}
+
+
+
+
