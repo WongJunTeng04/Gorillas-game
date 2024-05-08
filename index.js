@@ -80,18 +80,67 @@ function animate(timestamp){
 
 }
 
+//!!!!Entity generation!!!!
 function generateBackgroundBuilding(index){
+    const previousBuilding = state.backgroundBuildings[index - 1];
 
+    const x = previousBuilding
+    ? previousBuilding.x + previousBuilding.width + 4 //Adds 4 units as a gap from the previous building.
+    : -30;
+
+
+    //Generate the sizes for the building. where the width and height is random. For the width, anything between 60 and 110 is allowed.
+    const minWidth = 60;
+    const maxWidth = 110;
+    const width = minWidth + Math.random() * (maxWidth - minWidth);
+
+    //Generate the sizes for the building. where the width and height is random. For the height, anything between 80 and 350 is allowed.
+    const minHeight = 80;
+    const maxHeight = 350;
+    const height = minHeight + Math.random() * (maxHeight - minHeight);
+
+    state.backgroundBuildings.push({x, width, height });
 }
 
 function generateBuilding(index){
+    const previousBuilding = state.buildings[index -1]; //Starting place.
 
+    const x = previousBuilding
+    ? previousBuilding.x + previousBuilding.width + 4
+    : 0;
+
+    const minWidth = 80;
+    const maxWidth = 130;
+    const width = minWidth + Math.random() * (maxWidth - minWidth);
+
+    const platformWithGorilla = index === 1 || index === 6;
+
+    const minHeight = 40;
+    const maxHeight = 300;
+    const minHeightGorilla = 30;
+    const maxHeightGorilla = 150;
+
+    const height = platformWithGorilla
+    ? minHeightGorilla + Math.random() * (maxHeightGorilla - minHeightGorilla)
+    : minHeight + Math.random() * (maxHeight - minHeight);
+
+
+    //Generate an array of booleans to show if the light is on or off in a room. //For aesthetic reasons
+    const lightsOn = [];
+    for (let i = 0; i < 50; i++) {
+        const light = Math.random() <= 0.33 ? true : false;
+        lightsOn.push(light);
+    }
+
+    state.buildings.push({x, width, height, lightsOn });
 }
 
 function initializeBombPosition(){
     
 }
 
+
+//!!!!Drawing the entities on the canvas!!!!
 function drawBackground(){
     const gradient = ctx.createLinearGradient(0, 0, 0, window.innerHeight); //Paint the sky by defining a linear gradient. (x,x,y,y)
     gradient.addColorStop(1, "#F8BA85");
@@ -110,5 +159,60 @@ function drawBackground(){
     //The block of code for drawing the moon is so long is because there is no shortcut for fill for a moon shape, so we have to manually do it.
 
 }
+
+function drawBackgroundBuildings() {
+    state.backgroundBuildings.array.forEach((building) => {
+        ctx.fillStyle = "#947285";
+        ctx.fillRect(building.x, 0, building.width, building.height); 
+    });
+}
+
+function drawBuildings() {
+    state.buildings.forEach((building) => {
+        //Draw buildings
+        ctx.fillStyle = "#4A3C68"; //Set colour for the main buildings
+        ctx.fillRect(building.x, 0, bulding.width, building.height);
+
+        //Draw windows
+        const windowWidth = 10; //Window should have a width of 10 units
+        const windowHeight = 12; //Window should have a height of 12 units
+        const gap = 15; 
+        //Decides how far the window is from the top left corner of the building (both horizontally and vertically(like a padding))
+        //&& the gap between each window.
+        
+        const numberOfFloors = Math.ceil(
+            (building.height - gap) / (windowHeight + gap)
+        );
+
+        const numberOfRoomsPerFloor = Math.floor(
+            (building.width - gap) / (windowWidth + gap)
+        );
+
+        for (let floor = 0; floor < numberOfFloors; floor++) {
+            for (let room = 0; room < numberOfRoomsPerFloor; room++){
+                if (building.lightsOn[floor * numberOfRoomsPerFloor + room]){ //If there is lights on in the room, print a window.
+                    ctx.save(); 
+
+                    ctx.translate(building.x + gap, building.height - gap); //Positioning the window in a 2d grid that is initialised above.
+                    ctx.scale(1, -1);
+                    
+                    //Drawing the windows.
+                    const x = room * (windowWidth + gap);
+                    const y = floor * (windowHeight + gap);
+
+                    ctx.fillStyle = "#EBB6A2";
+                    ctx.fillRect(x, y, windowWidth, windowHeight);
+
+                    ctx.restore();
+                }
+            }
+        }
+
+
+
+    });
+}
+
+
 //Note: The functions are written in chronological order of when things will happen as we play the game. So from calling a new game
 //to printing the graphics, to throwing bombs and having them animated.
