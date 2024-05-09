@@ -3,4 +3,23 @@ body{
     padding: 0;
     /*These 2 css code helps the canvas to fit the full size of the canvas, by default, the browser has some custom paddings
     that spaces it from the edges of the browser. The code helps remove the padding to make it fit the whole screen */
+    font-family: monospace;
+    font-size: 14px;
+    color: white;
+    user-select: none; /* Avoids glitches */
+    -webkit-user-select: none;
+
+}
+
+#info-left {
+    position: absolute;
+    top: 20px;
+    left: 25px;
+}
+
+#info-right {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    text-align: right;
 }

@@ -8,6 +8,16 @@ let state = {};
 
 //The main canvas element and its drawing context
 const canvas = document.getElementById("game");
+
+//Left info panel
+const angle1DOM = document.querySelector("#info-screenLeft .angle");
+const velocity1DOM = document.querySelector("#info-left .velocity");
+
+//Right info panel
+const angle2DOM = document.querySelector("#info-right .angle");
+const velocity2DOM = document.querySelector("#info-right .velocity");
+
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const ctx = canvas.getContext("2d");
