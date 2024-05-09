@@ -93,12 +93,15 @@ function draw(){
 //Main functions
 //Event handlers
 function throwBomb(){
-
+    state.phase = "in flight";
+    previousAnimationTimestamp = undefined;
+    requestAnimationFrame(animate);
 }
 
 let isDragging = false;
 let dragStartX = undefined;
 let dragStartY = undefined;
+let previousAnimationTimestamp = undefined;
 
 bombGrabAreaDOM.addEventListener('mousedown', function (e){
     if (state.phase === "aiming") {
@@ -137,9 +140,6 @@ function setInfo(deltaX, deltaY) {
         velocity2DOM.innerText = Math.round(hypotenuse);
     }
 }
-
-
-
 
 window.addEventListener("mouseup", function() {
     if (isDragging) {
@@ -490,3 +490,47 @@ window.addEventListener("resize", () => {
     initializeBombPosition();
     draw();
 });
+
+
+function animate(timestamp) { //phase where the bomb is flying across the sky.
+    if (previousAnimationTimestamp === undefined) {
+        previousAnimationTimestamp = timestamp;
+        requestAnimationFrame(animate);
+        return;
+    }
+    const elapsedTime = timestamp - previousAnimationTimestamp;
+
+    moveBomb(elapsedTime);
+
+    //Hit detection
+    const miss = false; //Bomb hit a buidling or got off-screen
+    const hit = false; //Bomb hits the enemy.
+
+    //Handle the case when we hit a building or the bomb got off screen
+    if (miss) {
+
+        return;
+    }
+
+    if (hit) {
+
+        return;
+    }
+
+    draw();
+
+    //Continue the animation loop
+    previousAnimationTimestamp = timestamp;
+    requestAnimationFrame(animate);
+}
+
+function moveBomb(elapsedTime) {
+    const multiplier = elapsedTime / 200;
+
+    //Adjust trajectory by gravity
+    state.bomb.velocity.y -= 20 * multiplier;
+
+    //Calculate new position
+    state.bomb.x += state.bomb.velocity.x * multiplier;
+    state.bomb.y += state.bomb.velocity.y * multiplier;
+}
