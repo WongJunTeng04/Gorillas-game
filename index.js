@@ -95,6 +95,61 @@ function draw(){
 function throwBomb(){
 
 }
+let isDragging = false;
+let dragStartX = undefined;
+let dragStartY = undefined;
+
+bombGrabAreaDOM.addEventListener('mousedown', function (e){
+    if (state.phase === "aiming") {
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+
+        document.body.style.cursor = "grabbing";
+    }
+});
+
+window.addEventListener("mousemove", function (e) {
+    if (isDragging) {
+        let deltaX = e.clientX - dragStartX;
+        let deltaY = e.clientY - dragStartY;
+
+        state.bomb.velocity.x = -deltaX;
+        state.bomb.velocity.y = deltaY;
+        setInfo (deltaX, deltaY);
+
+        draw();
+    }
+});
+
+//Set values on the info panel.
+function setInfo(deltaX, deltaY) {
+    const hypotenuse = Math.sqrt(deltaX ** 2 + deltaY ** 2);
+    const angleInRadians = Math.asin(deltaY / hypotenuse);
+    const angleInDegrees = (angleInRadians / Math.PI) * 180;
+
+    if (state.currentPlayer === 1) {
+        angle1DOM.innerText = Math.round(angleInDegrees);
+        velocity1DOM.innerText = Math.round(hypotenuse);
+    }  else {
+        angle2DOM.innerText = Math.round(angleInDegrees);
+        velocity2DOM.innerText = Math.round(hypotenuse);
+    }
+}
+
+
+
+
+window.addEventListener("mouseup", function() {
+    if (isDragging) {
+        isDragging = false;
+        document.body.style.cursor = "default";
+
+        throwBomb();
+    }
+});
+
+
 
 //Use the animate function to move the bombs
 function animate(timestamp){
@@ -318,7 +373,7 @@ function drawGorillaLeftArm(player) {
     ctx.moveTo(-14, 50);
 
     if (state.phase === "aiming" && state.currentPlayer === 1 && player === 1) {
-        ctx.quadraticCurveTo(-44, 63, -28, 107); //Aiming (while holding the bomb)
+        ctx.quadraticCurveTo(-44, 63, -28 - state.bomb.velocity.x / 6.25, 107 - state.bomb.velocity.y / 6.25); //Aiming (while holding the bomb)
     } else if (state.phase === "celebrating" && state.currentPlayer === player) {
         ctx.quadraticCurveTo(-44, 63, -28, 107); //Celebrating
     } else{
@@ -336,7 +391,7 @@ function drawGorillaRightArm(player) {
     ctx.moveTo(+14, 50);
 
     if (state.phase === "aiming" && state.currentPlayer === 2 && player === 2){
-        ctx.quadraticCurveTo(+44, 63, +28, 107); //Aiming (while holding the bomb)
+        ctx.quadraticCurveTo(+44, 63, +28 - state.bomb.velocity.x / 6.25, 107 - state.bomb.velocity.y / 6.25); //Aiming (while holding the bomb)
     } else if (state.phase ==="celebrating" && state.currentPlayer === player) {
         ctx.quadraticCurveTo(+44, 63, +28, 107); //Celebrating
     } else{
@@ -392,6 +447,11 @@ function drawGorillaFace(player) {
 function drawBomb() {
     ctx.save();
     ctx.translate(state.bomb.x, state.bomb.y);
+
+    if (state.phase === "aiming") {
+        //Move the bomb with the mouse while aiming
+        ctx.translate(-state.bomb.velocity.x / 6.25, - state.bomb.velocity.y / 6.25);
+    }
 
     //Draw circle
     ctx.fillStyle = "white";
