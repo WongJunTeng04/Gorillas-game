@@ -95,6 +95,7 @@ function draw(){
 function throwBomb(){
 
 }
+
 let isDragging = false;
 let dragStartX = undefined;
 let dragStartY = undefined;
@@ -451,6 +452,17 @@ function drawBomb() {
     if (state.phase === "aiming") {
         //Move the bomb with the mouse while aiming
         ctx.translate(-state.bomb.velocity.x / 6.25, - state.bomb.velocity.y / 6.25);
+    
+
+        //Draw throwing trajectory
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+        ctx.setLineDash([3, 8]);
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(state.bomb.velocity.x, state.bomb.velocity.y);
+        ctx.stroke();
     }
 
     //Draw circle
