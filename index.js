@@ -228,6 +228,7 @@ function initializeBombPosition(){
     state.bomb.y = gorillaY + gorillaHandOffsetY;
     state.bomb.velocity.x = 0;
     state.bomb.velocity.y = 0;
+    state.bomb.rotation = 0;
 
     //Initialize the position of the grab area in HTML
     const grabAreaRadius = 15;
@@ -463,14 +464,29 @@ function drawBomb() {
         ctx.moveTo(0, 0);
         ctx.lineTo(state.bomb.velocity.x, state.bomb.velocity.y);
         ctx.stroke();
-    }
 
-    //Draw circle
-    ctx.fillStyle = "white";
-    ctx.beginPath();
-    ctx.arc(0, 0, 6, 0, 2 * Math.PI);
-    ctx.fill();
+         //Draw circle
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.arc(0, 0, 6, 0, 2 * Math.PI);
+        ctx.fill();
 
+    } else if (state.phase === "in flight") {
+        //Draw rotated banana.
+        ctx.fillStyle = "white";
+        ctx.rotate(state.bomb.rotation);
+        ctx.beginPath();
+        ctx.moveTo(-8, -2);
+        ctx.quadraticCurveTo(0, 12, 8, -2);
+        ctx.quadraticCurveTo(0, 2, -8, -2);
+        ctx.fill();
+    } else{
+        //Draw circle
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.arc(0, 0, 6, 0, 2 * Math.PI);
+        ctx.fill();
+    } 
     //Restore transformation
     ctx.restore();
 }
@@ -503,12 +519,16 @@ function animate(timestamp) { //phase where the bomb is flying across the sky.
     moveBomb(elapsedTime);
 
     //Hit detection
-    const miss = false; //Bomb hit a buidling or got off-screen
+    const miss = checkFrameHit() || false; //Bomb hit a buidling or got off-screen
     const hit = false; //Bomb hits the enemy.
 
     //Handle the case when we hit a building or the bomb got off screen
     if (miss) {
+        state.currentPlayer = state.currentPlayer === 1 ? 2 : 1; //Switch players if they miss from 1 to 2 and vice versa.
+        state.phase = "aiming";
+        initializeBombPosition();
 
+        draw();
         return;
     }
 
@@ -533,4 +553,19 @@ function moveBomb(elapsedTime) {
     //Calculate new position
     state.bomb.x += state.bomb.velocity.x * multiplier;
     state.bomb.y += state.bomb.velocity.y * multiplier;
+
+    //Rotate according to the direction
+    const direction = state.currentPlayer === 1 ? -1 : +1;
+    state.bomb.rotation += direction * 5 * multiplier;
+}
+
+function checkFrameHit() {
+    //Stop throw animation once the bomb gets out of the left, bottom, or right edge of the screen.
+    if (
+        state.bomb.y < 0 ||
+        state.bomb.x < 0 ||
+        state.bomb.x > window.innerWidth / state.scale
+    ){
+        return true; //The bomb is off-screen
+    }
 }
