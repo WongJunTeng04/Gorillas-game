@@ -31,6 +31,8 @@ function newGame(){
         backgroundBuildings: [],
         buildings: [],
         blastHoles: [],
+
+        scale: 1,
     };
 
     //Generate background buildings. //This is the buildings in the back. This is just for decoration and aesthetics.
@@ -42,6 +44,8 @@ function newGame(){
     for (let i = 0; i < 8; i++){
         generateBuilding(i);
     }
+
+    calculateScale();
 
     initializeBombPosition();
 
@@ -57,6 +61,7 @@ function draw(){
     //The reason why we do this is because the (coordinate origin point) is at the top left of the browser (0,0). 
     //In the context of a game, flipping it allows us to flip the origin point to the bottom, where it is more convenient when things happen from bottom to up.
     //Where the bottom of the screen is the ground, and we can build from the bottom.
+    ctx.scale(state.scale, state.scale);
 
     ///////
     //Draw scene
@@ -140,24 +145,38 @@ function generateBuilding(index){
 }
 
 function initializeBombPosition(){
-    
+    const building = 
+    state.currentPlayer === 1
+        ? state.buildings.at(1) //second building
+        : state.buildings.at(-2); //Second last building
+
+    const gorillaX = building.x + building.width / 2;
+    const gorillaY = building.height;
+
+    const gorillaHandOffsetX = state.currentPlayer === 1 ? -28 : 28;
+    const gorillaHandOffsetY = 107;
+
+    state.bomb.x = gorillaX + gorillaHandOffsetX;
+    state.bomb.y = gorillaY + gorillaHandOffsetY;
+    state.bomb.velocity.x = 0;
+    state.bomb.velocity.y = 0;
 }
 
 
 //!!!!Drawing the entities on the canvas!!!!
 function drawBackground(){
-    const gradient = ctx.createLinearGradient(0, 0, 0, window.innerHeight); //Paint the sky by defining a linear gradient. (x,x,y,y)
+    const background = ctx.createLinearGradient(0, 0, 0, window.innerHeight / state.scale); //Paint the sky by defining a linear gradient. (x,x,y,y)
     gradient.addColorStop(1, "#F8BA85");
     gradient.addColorStop(0, "FFC28E");
 
     //Draw sky
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, window.innerWidth / state.scale , window.innerHeight / state.scale);
 
     //Draw the moon
     ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
     ctx.beginPath();
-    ctx.arc(300,350, 60, 0, 2 * Math.PI); //(x,y,radius,start angle, end angle)
+    ctx.arc(300, 350, 60, 0, 2 * Math.PI); //(x,y,radius,start angle, end angle)
     ctx.fill();
 
     //The block of code for drawing the moon is so long is because there is no shortcut for fill for a moon shape, so we have to manually do it.
@@ -351,6 +370,32 @@ function drawGorillaFace(player) {
     ctx.stroke();
 }
 
+function drawBomb() {
+    ctx.save();
+    ctx.translate(state.bomb.x, state.bomb.y);
 
+    //Draw circle
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(0, 0, 6, 0, 2 * Math.PI);
+    ctx.fill();
 
+    //Restore transformation
+    ctx.restore();
+}
 
+function calculateScale() {
+    const lastBuilding = state.buildings.at(-1);
+    const totalWidthOfTheCity = lastBuilding.x + lastBuilding.width;
+
+    state.scale = window.innerWidth / totalWidthOfTheCity;
+}
+
+//Resize canvas element to fit the new size.
+window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    calculateScale();
+    initializeBombPosition();
+    draw();
+});
