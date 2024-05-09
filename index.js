@@ -79,7 +79,7 @@ function draw(){
     //Draw scene
     drawBackground();
     drawBackgroundBuildings();
-    drawBuildings();
+    drawBuildingsWithBlastHoles();
     drawGorilla(1);
     drawGorilla(2);
     drawBomb();
@@ -516,10 +516,13 @@ function animate(timestamp) { //phase where the bomb is flying across the sky.
     }
     const elapsedTime = timestamp - previousAnimationTimestamp;
 
-    moveBomb(elapsedTime);
+    const hitDetectionPrecision = 10;
+    for (let i = 0; i < hitDetectionPrecision; i++) {
+        moveBomb(elapsedTime / hitDetectionPrecision);
+    
 
     //Hit detection
-    const miss = checkFrameHit() || false; //Bomb hit a buidling or got off-screen
+    const miss = checkFrameHit() || checkBuildingHit(); //Bomb hit a buidling or got off-screen
     const hit = false; //Bomb hits the enemy.
 
     //Handle the case when we hit a building or the bomb got off screen
@@ -532,11 +535,12 @@ function animate(timestamp) { //phase where the bomb is flying across the sky.
         return;
     }
 
+    //Handle the case when we hit the enemy
     if (hit) {
-
+        //...
         return;
     }
-
+}
     draw();
 
     //Continue the animation loop
@@ -568,4 +572,63 @@ function checkFrameHit() {
     ){
         return true; //The bomb is off-screen
     }
+}
+
+function checkBuildingHit() {
+    for (let i = 0; i < state.buildings.length; i++) {
+        const building = state.buildings[i];
+        if (
+            state.bomb.x + 4 > building.x &&
+            state.bomb.x - 4 < building.x + building.width &&
+            state.bomb.y - 4 < 0 + building.height
+        ) {
+        //Check if the bomb is inside the blast hole of a previous impact
+        for (let j = 0; j < state.blastHoles.length; j++) {
+            const blastHole = state.blastHoles[j];
+
+            //Check how far the bomb is from the center of a previous blast hole
+            const horizontalDistance = state.bomb.x - blastHole.x;
+            const verticalDistance = state.bomb.y - blastHole.y;
+            const distance = Math.sqrt(
+                horizontalDistance ** 2 + verticalDistance ** 2
+            );
+            if (distance < blastHoleRadius) {
+                //The bomb is inside of the rectangle of a building,
+                //but a previous bomb already blew off this part of the building
+                return false;
+            }
+        }
+
+        state.blastHoles.push({ x: state.bomb.x, y: state.bomb.y });
+        return true; //Building has been hit by bomb
+
+        }
+    }
+}
+
+const blastHoleRadius = 18;
+
+
+function drawBuildingsWithBlastHoles() {
+    ctx.save();
+
+    state.blastHoles.forEach((blastHole) => {
+        ctx.beginPath();
+
+        //Outer shape clockwise
+        ctx.rect(
+            0,
+            0,
+            window.innerWidth / state.scale,
+            window.innerHeight / state.scale
+        );
+
+        //Inner shape counterclockwise //The reason why we have this is to create the holes in the buildings.
+        ctx.arc(blastHole.x, blastHole.y, blastHoleRadius, 0, 2 * Math.PI, true);
+
+        ctx.clip();
+    });
+    drawBuildings();
+
+    ctx.restore();
 }
